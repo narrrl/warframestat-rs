@@ -1,4 +1,6 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
+use serde_json::Value;
 
 /// Enum to represent the different platforms
 ///
@@ -96,348 +98,657 @@ impl Default for Language {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Platform {
-    timestamp: String,
-    alerts: Alerts,
-    arbitration: Arbitration,
-    archon_hunt: ArchonHunt,
-    cambion_cycle: CambionDrift,
-    cetus_cycle: Cetus,
-    conclave_challenges: ConclaveChallenges,
-    construction_progress: ConstructionProgress,
-    daily_deals: DailyDarvoDeals,
-    earth_cycle: EarthRotation,
-    events: Events,
-    fissures: Fissures,
-    flash_sales: DarvoFlashSales,
-    global_upgrades: GlobalUpgrades,
+    pub timestamp: String,
+    pub news: Vec<News>,
+    pub events: Vec<Event>,
+    pub alerts: Vec<Alert>,
+    pub sortie: Sortie,
+    pub syndicate_missions: Vec<SyndicateMission>,
+    pub fissures: Vec<Fissure>,
+    pub global_upgrades: Vec<Value>,
+    pub flash_sales: Vec<FlashSale>,
+    pub invasions: Vec<Invasion>,
+    pub dark_sectors: Vec<Value>,
+    pub void_traders: Vec<VoidTrader>,
+    pub void_trader: VoidTrader,
+    pub daily_deals: Vec<DailyDeal>,
+    pub simaris: Simaris,
+    pub conclave_challenges: Vec<ConclaveChallenge>,
+    pub persistent_enemies: Vec<Value>,
+    pub earth_cycle: EarthCycle,
+    pub cetus_cycle: CetusCycle,
+    pub cambion_cycle: CambionCycle,
+    pub zariman_cycle: ZarimanCycle,
+    pub weekly_challenges: Vec<Value>,
+    pub construction_progress: ConstructionProgress,
+    pub vallis_cycle: VallisCycle,
+    pub nightwave: Nightwave,
+    pub kuva: Vec<Value>,
+    pub arbitration: Arbitration,
+    pub sentient_outposts: SentientOutposts,
+    pub steel_path: SteelPath,
+    pub vault_trader: VaultTrader,
+    pub archon_hunt: ArchonHunt,
+    pub duviri_cycle: DuviriCycle,
 }
 
-pub type Alerts = Vec<Alert>;
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Alert {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    mission: Mission,
-    expired: bool,
-    eta: String,
-    reward_types: Vec<String>,
+pub struct News {
+    pub id: String,
+    pub message: String,
+    pub link: String,
+    pub image_link: String,
+    pub priority: bool,
+    pub date: String,
+    pub eta: String,
+    pub update: bool,
+    pub prime_access: bool,
+    pub stream: bool,
+    pub translations: Translations,
+    pub as_string: String,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Mission {
-    reward: Reward,
-    node: String,
-    node_key: String,
-    faction: String,
-    faction_key: String,
-    max_enemy_level: u16,
-    min_enemy_level: u16,
-    max_wave_num: u16,
-    #[serde(rename = "type")]
-    mission_type: String,
-    type_key: String,
-    nightmare: bool,
-    archwing_required: bool,
-    is_sharkwing: bool,
-    enemy_spec: String,
-    level_override: String,
-    advanced_spawners: Vec<String>,
-    required_items: Vec<String>,
-    consume_required_items: bool,
-    leaders_always_allowed: bool,
-    level_auras: Vec<String>,
-    description: String,
+pub struct Translations {
+    pub en: String,
+    pub fr: Option<String>,
+    pub it: Option<String>,
+    pub de: Option<String>,
+    pub es: Option<String>,
+    pub pt: Option<String>,
+    pub ru: Option<String>,
+    pub pl: Option<String>,
+    pub uk: Option<String>,
+    pub tr: Option<String>,
+    pub ja: Option<String>,
+    pub zh: Option<String>,
+    pub ko: Option<String>,
+    pub tc: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Reward {
-    counted_items: Vec<ItemBundle>,
-    thumbnail: String,
-    color: u32,
-    credits: u32,
-    as_string: String,
-    items: Vec<Item>,
-    item_string: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Item(String);
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ItemBundle {
-    #[serde(rename = "type")]
-    item: Item,
-    count: u32,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Arbitration {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    node: String,
-    enemy: String,
-    enemy_key: String,
-    #[serde(rename = "type")]
-    arbitration_type: String,
-    type_key: String,
-    archwing: bool,
-    sharkwing: bool,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArchonHunt {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    reward_pool: String,
-    missions: [Mission; 3],
-    boss: String,
-    faction: String,
-    faction_key: String,
-    expired: bool,
-    eta: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CambionDrift {
-    id: String,
-    expiry: String,
-    activation: String,
-    state: String,
-    active: String,
-    time_left: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Cetus {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    is_day: bool,
-    state: String,
-    time_left: String,
-    is_cetus: bool,
-    short_string: String,
-}
-
-pub type ConclaveChallenges = Vec<ConclaveChallengeData>;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ConclaveChallengeData {
-    mode: String,
-    amount: u32,
-    eta: String,
-    expired: bool,
-    end_string: String,
-    daily: bool,
-    description: String,
-    id: String,
-    expiry: String,
-    as_string: String,
-    category: String,
-    root_challenge: bool,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ConstructionProgress {
-    id: String,
-    fomorian_progress: String,
-    razorback_progress: String,
-    unknown_progress: String,
-}
-
-pub type DailyDarvoDeals = Vec<DailyDarvoDeal>;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DailyDarvoDeal {
-    sold: u32,
-    item: String,
-    unique_name: String,
-    total: u32,
-    eta: String,
-    original_price: u32,
-    sale_price: u32,
-    discount: u32,
-    expiry: String,
-    id: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EarthRotation {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    is_day: bool,
-    time_left: String,
-}
-
-pub type Events = Vec<Event>;
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Event {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    maximum_score: u32,
-    current_score: u32,
-    small_interval: u32,
-    large_interval: u32,
-    faction: String,
-    descripion: String,
-    tooltip: String,
-    node: String,
-    concurrent_nodes: Vec<String>,
-    victim_node: String,
-    score_loc_tag: String,
-    rewards: Vec<Reward>,
-    health: u32,
-    affiliated_with: String,
-    jobs: Vec<Job>,
-    progress_steps: Vec<ProgressStep>,
-    progress_total: u32,
-    show_total_at_end_of_mission: bool,
-    is_personal: bool,
-    is_community: bool,
-    region_drops: Vec<String>,
-    archwing_drops: Vec<String>,
-    as_string: String,
-    completion_bonuses: Vec<u32>,
-    score_var: String,
-    alt_expiry: String,
-    alt_activation: String,
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub maximum_score: i64,
+    pub current_score: i64,
+    pub small_interval: Value,
+    pub large_interval: Value,
+    pub description: String,
+    pub tooltip: String,
+    pub node: String,
+    pub concurrent_nodes: Vec<Value>,
+    pub score_loc_tag: String,
+    pub rewards: Vec<Reward>,
+    pub expired: bool,
+    pub health: i64,
+    pub interim_steps: Vec<InterimStep>,
+    pub progress_steps: Vec<Value>,
+    pub is_personal: bool,
+    pub is_community: bool,
+    pub region_drops: Vec<Value>,
+    pub archwing_drops: Vec<Value>,
+    pub as_string: String,
+    pub metadata: Metadata,
+    pub completion_bonuses: Vec<Value>,
+    pub score_var: String,
+    pub alt_expiry: String,
+    pub alt_activation: String,
+    pub next_alt: NextAlt,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProgressStep {
-    #[serde(rename = "type")]
-    progress_type: String,
-    progress_amt: u32,
+pub struct Reward {
+    pub items: Vec<String>,
+    pub counted_items: Vec<Value>,
+    pub credits: i64,
+    pub as_string: String,
+    pub item_string: String,
+    pub thumbnail: String,
+    pub color: i64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Job {
-    activation: String,
-    expiry: String,
-    reward_pool: Vec<String>,
-    #[serde(rename = "type")]
-    job_type: String,
-    enemy_levels: Vec<u32>,
-    standing_stages: Vec<u32>,
-    #[serde(rename = "minMR")]
-    min_mr: u8,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InterimStep {
-    goal: u32,
-    reward: Reward,
-    message: Message,
+    pub goal: i64,
+    pub reward: Reward,
+    pub message: Message,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Message {
-    sender: String,
-    subject: String,
-    message: String,
-    sender_icon: String,
-    attachments: String,
-    winner_count: u32,
+pub struct Message {}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Metadata {}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NextAlt {
+    pub expiry: String,
+    pub activation: String,
 }
 
-pub type Fissures = Vec<Fissure>;
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Alert {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub mission: Mission,
+    pub eta: String,
+    pub reward_types: Vec<String>,
+}
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Mission {
+    pub node: String,
+    pub node_key: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub type_key: String,
+    pub faction: String,
+    pub faction_key: String,
+    pub reward: Reward,
+    pub min_enemy_level: i64,
+    pub max_enemy_level: i64,
+    pub nightmare: bool,
+    pub archwing_required: bool,
+    pub is_sharkwing: bool,
+    pub level_override: String,
+    pub enemy_spec: String,
+    pub advanced_spawners: Vec<Value>,
+    pub required_items: Vec<Value>,
+    pub level_auras: Vec<Value>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sortie {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub reward_pool: String,
+    pub variants: Vec<Variant>,
+    pub missions: Vec<Value>,
+    pub boss: String,
+    pub faction: String,
+    pub faction_key: String,
+    pub expired: bool,
+    pub eta: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Variant {
+    pub mission_type: String,
+    pub mission_type_key: String,
+    pub modifier: String,
+    pub modifier_description: String,
+    pub node: String,
+    pub node_key: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyndicateMission {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub syndicate: String,
+    pub syndicate_key: String,
+    pub nodes: Vec<String>,
+    pub jobs: Vec<Job>,
+    pub eta: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Job {
+    pub id: String,
+    pub reward_pool: Vec<String>,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub enemy_levels: Vec<i64>,
+    pub standing_stages: Vec<i64>,
+    #[serde(rename = "minMR")]
+    pub min_mr: u8,
+    pub expiry: String,
+    pub time_bound: Option<String>,
+    pub is_vault: Option<bool>,
+    pub location_tag: Option<String>,
+    pub time_boound: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fissure {
-    id: String,
-    activation: String,
-    expiry: String,
-    start_string: String,
-    active: bool,
-    node: String,
-    expired: bool,
-    eta: String,
-    mission_type: String,
-    mission_key: String,
-    tier: FissureTier,
-    enemy: String,
-    is_storm: bool,
-    is_hard: bool,
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub node: String,
+    pub mission_type: String,
+    pub mission_key: String,
+    pub enemy: String,
+    pub enemy_key: String,
+    pub node_key: String,
+    pub tier: String,
+    pub tier_num: u8,
+    pub expired: bool,
+    pub eta: String,
+    pub is_storm: bool,
+    pub is_hard: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum FissureTier {
-    Lith,
-    Meso,
-    Neo,
-    Axi,
-    Requiem,
+pub struct FlashSale {
+    pub item: String,
+    pub expiry: String,
+    pub activation: String,
+    pub discount: i64,
+    pub regular_override: Option<i64>,
+    pub premium_override: i64,
+    pub is_shown_in_market: bool,
+    pub id: String,
+    pub expired: bool,
+    pub eta: String,
 }
 
-pub type DarvoFlashSales = Vec<DarvoFlashSale>;
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DarvoFlashSale {
-    item: String,
-    expired: bool,
-    eta: String,
-    discount: u32,
-    premium_override: u32,
-    is_popular: bool,
-    is_featured: bool,
+pub struct Invasion {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub node: String,
+    pub node_key: String,
+    pub desc: String,
+    pub attacking_faction: String,
+    pub attacker: Attacker,
+    pub defender: Defender,
+    pub vs_infestation: bool,
+    pub count: i64,
+    pub required_runs: i64,
+    pub completion: f64,
+    pub completed: bool,
+    pub eta: String,
+    pub reward_types: Vec<String>,
 }
 
-pub type GlobalUpgrades = Vec<GlobalUpgrade>;
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GlobalUpgrade {
-    start: String,
-    end: String,
-    upgrade: String,
-    operation: String,
-    operation_symbol: String,
-    upgrade_operation_value: u32,
-    expired: bool,
-    eta: String,
-    #[serde(rename = "desc")]
-    descripion: String,
+pub struct Attacker {
+    pub reward: Option<Reward>,
+    pub faction: String,
+    pub faction_key: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CountedItem {
+    pub count: i64,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub key: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Defender {
+    pub reward: Reward,
+    pub faction: String,
+    pub faction_key: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VoidTrader {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub character: String,
+    pub location: String,
+    pub inventory: Vec<Value>,
+    pub ps_id: String,
+    pub end_string: String,
+    pub initial_start: String,
+    pub schedule: Vec<Value>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DailyDeal {
+    pub item: String,
+    pub unique_name: String,
+    pub expiry: String,
+    pub activation: String,
+    pub original_price: i64,
+    pub sale_price: i64,
+    pub total: i64,
+    pub sold: i64,
+    pub id: String,
+    pub eta: String,
+    pub discount: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Simaris {
+    pub target: String,
+    pub is_target_active: bool,
+    pub as_string: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConclaveChallenge {
+    pub id: String,
+    pub expiry: String,
+    pub activation: String,
+    pub amount: i64,
+    pub mode: String,
+    pub category: String,
+    pub eta: String,
+    pub expired: bool,
+    pub daily: bool,
+    pub root_challenge: bool,
+    pub end_string: String,
+    pub description: String,
+    pub title: String,
+    pub standing: i64,
+    pub as_string: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EarthCycle {
+    pub id: String,
+    pub expiry: String,
+    pub activation: String,
+    pub is_day: bool,
+    pub state: String,
+    pub time_left: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CetusCycle {
+    pub id: String,
+    pub expiry: String,
+    pub activation: String,
+    pub is_day: bool,
+    pub state: String,
+    pub time_left: String,
+    pub is_cetus: bool,
+    pub short_string: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CambionCycle {
+    pub id: String,
+    pub activation: String,
+    pub expiry: String,
+    pub time_left: String,
+    pub state: String,
+    pub active: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZarimanCycle {
+    pub id: String,
+    pub expiry: String,
+    pub activation: String,
+    pub is_corpus: bool,
+    pub state: String,
+    pub time_left: String,
+    pub short_string: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConstructionProgress {
+    pub id: String,
+    pub fomorian_progress: String,
+    pub razorback_progress: String,
+    pub unknown_progress: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VallisCycle {
+    pub id: String,
+    pub expiry: String,
+    pub is_warm: bool,
+    pub state: String,
+    pub activation: String,
+    pub time_left: String,
+    pub short_string: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Nightwave {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub season: i64,
+    pub tag: String,
+    pub phase: i64,
+    pub params: Params,
+    pub possible_challenges: Vec<Value>,
+    pub active_challenges: Vec<ActiveChallenge>,
+    pub reward_types: Vec<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Params {}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ActiveChallenge {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub is_daily: bool,
+    pub is_elite: bool,
+    pub desc: String,
+    pub title: String,
+    pub reputation: i64,
+    pub is_permanent: bool,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Arbitration {
+    pub activation: String,
+    pub expiry: String,
+    pub enemy: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub archwing: bool,
+    pub sharkwing: bool,
+    pub node: String,
+    pub node_key: String,
+    pub type_key: String,
+    pub id: String,
+    pub expired: bool,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SentientOutposts {
+    pub mission: SentientMission,
+    pub activation: String,
+    pub expiry: String,
+    pub active: bool,
+    pub id: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SentientMission {
+    pub node: String,
+    pub faction: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SteelPath {
+    pub current_reward: CurrentReward,
+    pub activation: String,
+    pub expiry: String,
+    pub remaining: String,
+    pub rotation: Vec<Rotation>,
+    pub evergreens: Vec<Evergreen>,
+    pub incursions: Incursions,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CurrentReward {
+    pub name: String,
+    pub cost: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Rotation {
+    pub name: String,
+    pub cost: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Evergreen {
+    pub name: String,
+    pub cost: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Incursions {
+    pub id: String,
+    pub activation: String,
+    pub expiry: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultTrader {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub character: String,
+    pub location: String,
+    pub inventory: Vec<Inventory>,
+    pub ps_id: String,
+    pub end_string: String,
+    pub initial_start: String,
+    pub completed: bool,
+    pub schedule: Vec<Schedule>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Inventory {
+    pub unique_name: String,
+    pub item: String,
+    pub ducats: Option<i64>,
+    pub credits: Option<i64>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Schedule {
+    pub expiry: String,
+    pub item: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchonHunt {
+    pub id: String,
+    pub activation: String,
+    pub start_string: String,
+    pub expiry: String,
+    pub active: bool,
+    pub reward_pool: String,
+    pub variants: Vec<Value>,
+    pub missions: Vec<ArchonHuntMission>,
+    pub boss: String,
+    pub faction: String,
+    pub faction_key: String,
+    pub expired: bool,
+    pub eta: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchonHuntMission {
+    pub node: String,
+    pub node_key: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub type_key: String,
+    pub nightmare: bool,
+    pub archwing_required: bool,
+    pub is_sharkwing: bool,
+    pub advanced_spawners: Vec<Value>,
+    pub required_items: Vec<Value>,
+    pub level_auras: Vec<Value>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DuviriCycle {
+    pub id: String,
+    pub activation: String,
+    pub expiry: String,
+    pub state: String,
+    pub choices: Vec<Choice>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Choice {
+    pub category: String,
+    pub category_key: String,
+    pub choices: Vec<String>,
 }
