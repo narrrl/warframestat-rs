@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
+use std::collections::HashMap;
 
 /// Enum to represent the different platforms
 ///
@@ -156,21 +157,12 @@ pub struct News {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Translations {
-    pub en: String,
-    pub fr: Option<String>,
-    pub it: Option<String>,
-    pub de: Option<String>,
-    pub es: Option<String>,
-    pub pt: Option<String>,
-    pub ru: Option<String>,
-    pub pl: Option<String>,
-    pub uk: Option<String>,
-    pub tr: Option<String>,
-    pub ja: Option<String>,
-    pub zh: Option<String>,
-    pub ko: Option<String>,
-    pub tc: Option<String>,
+pub struct Translations(HashMap<String, String>);
+
+impl Translations {
+    pub fn get(&self, lang: Language) -> Option<&String> {
+        self.0.get(lang.into())
+    }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
