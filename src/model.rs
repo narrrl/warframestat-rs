@@ -6,7 +6,7 @@ use std::collections::HashMap;
 /// Enum to represent the different platforms
 ///
 /// Defaults to "Platform::PC"
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum PlatformType {
     PC,
     PS4,
@@ -47,7 +47,7 @@ impl Into<&str> for PlatformType {
 /// Enum representing the different languages
 ///
 /// Defaults to `Language::English`
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Language {
     English,
     German,

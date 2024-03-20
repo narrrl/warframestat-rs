@@ -1,17 +1,81 @@
 pub mod model;
 
 use reqwest::Client as HttpClient;
+use std::collections::HashMap;
 use url::Url;
+
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 const API_URL: &'static str = "https://api-warframestat.us";
 
 ///
 /// WarframeClient to request data from the [Warframestat API](https://doc.warframestat.us)
 ///
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WarframeClient {
     base_url: Url,
     http: HttpClient,
+}
+
+impl Default for WarframeClient {
+    fn default() -> WarframeClient {
+        WarframeClient {
+            base_url: Url::parse(API_URL).expect(&format!("couldn't parse url from {}", API_URL)),
+            http: HttpClient::default(),
+        }
+    }
+}
+
+///
+/// Cache to cache the results of `WarframeClient`. It is threadsafe because it internally uses an
+/// arc mutex
+///
+#[derive(Debug, Default, Clone)]
+pub struct WarframeCache {
+    map: Arc<Mutex<HashMap<(&'static str, model::PlatformType, model::Language), String>>>,
+}
+
+type CacheResult = Result<String, Box<dyn std::error::Error>>;
+
+impl WarframeCache {
+    pub fn new() -> Self {
+        Self {
+            map: Arc::new(Mutex::new(HashMap::new())),
+        }
+    }
+
+    ///
+    /// get a json from the cache, returns `None` if not cached
+    ///
+    pub async fn get(
+        &self,
+        key: &str,
+        language: model::Language,
+        platform: model::PlatformType,
+    ) -> Option<String> {
+        let lock = self.map.lock().await;
+        lock.get(&(key, platform, language))
+            .map(|json| json.to_string())
+    }
+
+    ///
+    /// return a json from the cache or execute a future when the entry doesn't exists and put it
+    /// in the cache
+    ///
+    pub async fn get_or_insert(
+        &mut self,
+        key: &'static str,
+        language: model::Language,
+        platform: model::PlatformType,
+        future: impl std::future::Future<Output = CacheResult>,
+    ) -> CacheResult {
+        let mut lock = self.map.lock().await;
+        Ok(lock
+            .entry((key, platform, language))
+            .or_insert(future.await?)
+            .to_string())
+    }
 }
 
 impl WarframeClient {
@@ -40,9 +104,6 @@ impl WarframeClient {
         Ok(platform)
     }
 }
-
-#[derive(Debug)]
-pub struct Cache;
 
 #[cfg(test)]
 mod tests {
