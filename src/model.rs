@@ -1,7 +1,12 @@
+use chrono::DateTime;
+use chrono::Local;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::time::SystemTime;
+
+pub trait Expirable {
+    fn expiry(&self) -> &DateTime<Local>;
+}
 
 /// Enum to represent the different platforms
 ///
@@ -99,10 +104,10 @@ impl Default for Language {
     }
 }
 
-trait Expirable {
-    fn expiry_time() -> SystemTime;
-}
-
+///
+/// Requests just about everything, probably better to requests just the stuff you need
+/// Gets cached for only 60s
+///
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Platform {
@@ -169,9 +174,9 @@ impl Translations {
 #[serde(rename_all = "camelCase")]
 pub struct Event {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub maximum_score: i64,
     pub current_score: i64,
@@ -234,17 +239,17 @@ pub struct Message {}
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NextAlt {
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Alert {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub mission: Mission,
     pub eta: String,
@@ -278,9 +283,9 @@ pub struct Mission {
 #[serde(rename_all = "camelCase")]
 pub struct Sortie {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub reward_pool: String,
     pub variants: Vec<Variant>,
@@ -307,9 +312,9 @@ pub struct Variant {
 #[serde(rename_all = "camelCase")]
 pub struct SyndicateMission {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub syndicate: String,
     pub syndicate_key: String,
@@ -329,7 +334,7 @@ pub struct Job {
     pub standing_stages: Vec<i64>,
     #[serde(rename = "minMR")]
     pub min_mr: u8,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub time_bound: Option<String>,
     pub is_vault: Option<bool>,
     pub location_tag: Option<String>,
@@ -340,9 +345,9 @@ pub struct Job {
 #[serde(rename_all = "camelCase")]
 pub struct Fissure {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub node: String,
     pub mission_type: String,
@@ -362,8 +367,8 @@ pub struct Fissure {
 #[serde(rename_all = "camelCase")]
 pub struct FlashSale {
     pub item: String,
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
     pub discount: i64,
     pub regular_override: Option<i64>,
     pub premium_override: i64,
@@ -377,7 +382,7 @@ pub struct FlashSale {
 #[serde(rename_all = "camelCase")]
 pub struct Invasion {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
     pub node: String,
     pub node_key: String,
@@ -423,9 +428,9 @@ pub struct Defender {
 #[serde(rename_all = "camelCase")]
 pub struct VoidTrader {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub character: String,
     pub location: String,
@@ -448,8 +453,8 @@ pub struct VoidItem {
 pub struct DailyDeal {
     pub item: String,
     pub unique_name: String,
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
     pub original_price: i64,
     pub sale_price: i64,
     pub total: i64,
@@ -471,8 +476,8 @@ pub struct Simaris {
 #[serde(rename_all = "camelCase")]
 pub struct ConclaveChallenge {
     pub id: String,
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
     pub amount: i64,
     pub mode: String,
     pub category: String,
@@ -491,8 +496,8 @@ pub struct ConclaveChallenge {
 #[serde(rename_all = "camelCase")]
 pub struct EarthCycle {
     pub id: String,
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
     pub is_day: bool,
     pub state: String,
     pub time_left: String,
@@ -502,8 +507,8 @@ pub struct EarthCycle {
 #[serde(rename_all = "camelCase")]
 pub struct CetusCycle {
     pub id: String,
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
     pub is_day: bool,
     pub state: String,
     pub time_left: String,
@@ -515,8 +520,8 @@ pub struct CetusCycle {
 #[serde(rename_all = "camelCase")]
 pub struct CambionCycle {
     pub id: String,
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
     pub time_left: String,
     pub state: String,
     pub active: String,
@@ -526,8 +531,8 @@ pub struct CambionCycle {
 #[serde(rename_all = "camelCase")]
 pub struct ZarimanCycle {
     pub id: String,
-    pub expiry: String,
-    pub activation: String,
+    pub expiry: DateTime<Local>,
+    pub activation: DateTime<Local>,
     pub is_corpus: bool,
     pub state: String,
     pub time_left: String,
@@ -547,10 +552,10 @@ pub struct ConstructionProgress {
 #[serde(rename_all = "camelCase")]
 pub struct VallisCycle {
     pub id: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub is_warm: bool,
     pub state: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub time_left: String,
     pub short_string: String,
 }
@@ -559,9 +564,9 @@ pub struct VallisCycle {
 #[serde(rename_all = "camelCase")]
 pub struct Nightwave {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub season: i64,
     pub tag: String,
@@ -579,9 +584,9 @@ pub struct Params {}
 #[serde(rename_all = "camelCase")]
 pub struct ActiveChallenge {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub is_daily: bool,
     pub is_elite: bool,
@@ -594,8 +599,8 @@ pub struct ActiveChallenge {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Arbitration {
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
     pub enemy: String,
     #[serde(rename = "type")]
     pub type_field: String,
@@ -612,8 +617,8 @@ pub struct Arbitration {
 #[serde(rename_all = "camelCase")]
 pub struct SentientOutposts {
     pub mission: SentientMission,
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub id: String,
 }
@@ -631,8 +636,8 @@ pub struct SentientMission {
 #[serde(rename_all = "camelCase")]
 pub struct SteelPath {
     pub current_reward: CurrentReward,
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
     pub remaining: String,
     pub rotation: Vec<Rotation>,
     pub evergreens: Vec<Evergreen>,
@@ -664,17 +669,17 @@ pub struct Evergreen {
 #[serde(rename_all = "camelCase")]
 pub struct Incursions {
     pub id: String,
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultTrader {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub character: String,
     pub location: String,
@@ -698,7 +703,7 @@ pub struct Inventory {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Schedule {
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub item: Option<String>,
 }
 
@@ -706,9 +711,9 @@ pub struct Schedule {
 #[serde(rename_all = "camelCase")]
 pub struct ArchonHunt {
     pub id: String,
-    pub activation: String,
+    pub activation: DateTime<Local>,
     pub start_string: String,
-    pub expiry: String,
+    pub expiry: DateTime<Local>,
     pub active: bool,
     pub reward_pool: String,
     pub missions: Vec<ArchonHuntMission>,
@@ -739,8 +744,8 @@ pub struct ArchonHuntMission {
 #[serde(rename_all = "camelCase")]
 pub struct DuviriCycle {
     pub id: String,
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
     pub state: String,
     pub choices: Vec<Choice>,
 }
@@ -757,8 +762,8 @@ pub struct Choice {
 #[serde(rename_all = "camelCase")]
 pub struct Kuva {
     pub id: String,
-    pub activation: String,
-    pub expiry: String,
+    pub activation: DateTime<Local>,
+    pub expiry: DateTime<Local>,
     pub start_string: String,
     pub active: bool,
     pub node: String,

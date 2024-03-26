@@ -1,8 +1,9 @@
 pub mod model;
+use model::*;
 
-use reqwest::Client as HttpClient;
+use chrono::{DateTime, Local};
+use reqwest::{Client as HttpClient, Response};
 use std::collections::HashMap;
-use std::time::SystemTime;
 use url::Url;
 
 use std::sync::Arc;
@@ -17,13 +18,14 @@ const API_URL: &'static str = "https://api-warframestat.us";
 pub struct WarframeClient {
     base_url: Url,
     http: HttpClient,
+    cache: WarframeCache<&'static str>,
 }
 
 impl Default for WarframeClient {
     fn default() -> WarframeClient {
         WarframeClient {
             base_url: Url::parse(API_URL).expect(&format!("couldn't parse url from {}", API_URL)),
-            http: HttpClient::default(),
+            ..Default::default()
         }
     }
 }
@@ -32,12 +34,18 @@ impl Default for WarframeClient {
 /// defines a cache entry to validate cache entries based on the `timestamp`
 ///
 #[derive(Debug, Clone)]
-struct CacheEntry<T>
+pub struct CacheEntry<T>
 where
     T: Clone,
 {
     pub entry: T,
-    expiration_time: SystemTime,
+    expiration_time: DateTime<Local>,
+}
+
+impl<T: Clone> CacheEntry<T> {
+    fn is_expired(&self) -> bool {
+        Local::now() >= self.expiration_time
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -46,12 +54,12 @@ where
     T: std::hash::Hash + PartialEq + Eq,
 {
     pub key_value: T,
-    pub language: model::Language,
-    pub platform: model::PlatformType,
+    pub language: Language,
+    pub platform: PlatformType,
 }
 
 impl<T: std::hash::Hash + PartialEq + Eq> CacheKey<T> {
-    fn new(key_value: T, language: model::Language, platform: model::PlatformType) -> Self {
+    fn new(key_value: T, language: Language, platform: PlatformType) -> Self {
         Self {
             key_value,
             language,
@@ -61,7 +69,7 @@ impl<T: std::hash::Hash + PartialEq + Eq> CacheKey<T> {
 }
 
 impl<T: Clone> CacheEntry<T> {
-    fn new(entry: T, expiration_time: SystemTime) -> Self {
+    fn new(entry: T, expiration_time: DateTime<Local>) -> Self {
         Self {
             entry,
             expiration_time,
@@ -74,13 +82,11 @@ impl<T: Clone> CacheEntry<T> {
 /// arc mutex
 ///
 #[derive(Debug, Default, Clone)]
-pub struct WarframeCache {
-    map: Arc<Mutex<HashMap<CacheKey<&'static str>, CacheEntry<String>>>>,
+pub struct WarframeCache<T: std::hash::Hash + PartialEq + Eq> {
+    map: Arc<Mutex<HashMap<CacheKey<T>, CacheEntry<String>>>>,
 }
 
-type CacheResult = Result<String, Box<dyn std::error::Error>>;
-
-impl WarframeCache {
+impl<T: std::hash::Hash + PartialEq + Eq> WarframeCache<T> {
     pub fn new() -> Self {
         Self {
             map: Arc::new(Mutex::new(HashMap::new())),
@@ -90,28 +96,30 @@ impl WarframeCache {
     ///
     /// get a json from the cache, returns `None` if not cached
     ///
-    pub async fn get(
-        &self,
-        key: &str,
-        language: model::Language,
-        platform: model::PlatformType,
-    ) -> Option<String> {
-        // TODO: implement
-        panic!("not implemented");
+    pub async fn get(&self, key: T, language: Language, platform: PlatformType) -> Option<String> {
+        let locked_map = self.map.lock().await;
+        let item = locked_map.get(&CacheKey::new(key, language, platform));
+        if let Some(i) = item {
+            if i.is_expired() {
+                return None;
+            }
+        }
+        item.map(|entry| entry.entry.to_string())
     }
 
-    ///
-    /// return a json from the cache or execute a future when the entry doesn't exists and put it
-    /// in the cache
-    ///
-    pub async fn get_or_insert(
+    pub async fn insert(
         &mut self,
-        key: &'static str,
-        language: model::Language,
-        platform: model::PlatformType,
-        future: impl std::future::Future<Output = CacheResult>,
-    ) -> CacheResult {
-        panic!("not implemented");
+        key: T,
+        language: Language,
+        platform: PlatformType,
+        entry: String,
+        expiration_time: DateTime<Local>,
+    ) {
+        let mut map = self.map.lock().await;
+        map.insert(
+            CacheKey::new(key, language, platform),
+            CacheEntry::new(entry, expiration_time),
+        );
     }
 }
 
@@ -120,18 +128,16 @@ impl WarframeClient {
     /// Create new WarframeClient that can be reused for multiple requests
     ///
     pub fn new() -> Self {
-        let base_url = Url::parse(API_URL).expect(&format!("couldn't parse url from {}", API_URL));
-        let http = HttpClient::new();
-        Self { base_url, http }
+        Self::default()
     }
 
     ///
-    /// Get the whole data for a `model::Platform` and a choosen `model::Language`
+    /// Get the whole data for a `model::Platform` and a choosen `Language`
     ///
     pub async fn get_platform(
         &self,
-        platform: model::PlatformType,
-        lang: model::Language,
+        platform: PlatformType,
+        lang: Language,
     ) -> Result<model::Platform, Box<dyn std::error::Error>> {
         let mut get_url = self.base_url.clone();
         get_url.set_path(platform.into());
@@ -139,6 +145,30 @@ impl WarframeClient {
         let res = self.http.get(get_url).send().await?;
         let platform: model::Platform = res.json().await?;
         Ok(platform)
+    }
+
+    async fn request(
+        &self,
+        path: &str,
+        platform: PlatformType,
+        lang: Language,
+    ) -> Result<Response, reqwest::Error> {
+        let mut get_url = self.base_url.clone();
+        get_url.set_path((platform.to_string() + path).as_str());
+        get_url.set_query(Some(&format!("language={}", lang.to_string())));
+        self.http.get(get_url).send().await
+    }
+
+    pub async fn get_alerts(
+        &mut self,
+        platform: PlatformType,
+        lang: Language,
+    ) -> Result<Vec<Alert>, Box<dyn std::error::Error>> {
+        if let Some(s) = self.cache.get("alerts", lang, platform).await {
+            return serde_json::from_str(&s)?;
+        }
+        let res = self.request("/alerts", platform, lang).await?;
+        let obj: Vec<Alert> = res.json().await?;
     }
 }
 
