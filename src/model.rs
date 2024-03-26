@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::Value;
 use std::collections::HashMap;
+use std::time::SystemTime;
 
 /// Enum to represent the different platforms
 ///
@@ -99,6 +99,10 @@ impl Default for Language {
     }
 }
 
+trait Expirable {
+    fn expiry_time() -> SystemTime;
+}
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Platform {
@@ -109,25 +113,21 @@ pub struct Platform {
     pub sortie: Sortie,
     pub syndicate_missions: Vec<SyndicateMission>,
     pub fissures: Vec<Fissure>,
-    pub global_upgrades: Vec<Value>,
     pub flash_sales: Vec<FlashSale>,
     pub invasions: Vec<Invasion>,
-    pub dark_sectors: Vec<Value>,
     pub void_traders: Vec<VoidTrader>,
     pub void_trader: VoidTrader,
     pub daily_deals: Vec<DailyDeal>,
     pub simaris: Simaris,
     pub conclave_challenges: Vec<ConclaveChallenge>,
-    pub persistent_enemies: Vec<Value>,
     pub earth_cycle: EarthCycle,
     pub cetus_cycle: CetusCycle,
     pub cambion_cycle: CambionCycle,
     pub zariman_cycle: ZarimanCycle,
-    pub weekly_challenges: Vec<Value>,
     pub construction_progress: ConstructionProgress,
     pub vallis_cycle: VallisCycle,
     pub nightwave: Nightwave,
-    pub kuva: Vec<Value>,
+    pub kuva: Vec<Kuva>,
     pub arbitration: Arbitration,
     pub sentient_outposts: SentientOutposts,
     pub steel_path: SteelPath,
@@ -175,25 +175,24 @@ pub struct Event {
     pub active: bool,
     pub maximum_score: i64,
     pub current_score: i64,
-    pub small_interval: Value,
-    pub large_interval: Value,
+    pub small_interval: Option<i64>,
+    pub large_interval: Option<i64>,
     pub description: String,
     pub tooltip: String,
     pub node: String,
-    pub concurrent_nodes: Vec<Value>,
+    pub concurrent_nodes: Vec<String>,
     pub score_loc_tag: String,
     pub rewards: Vec<Reward>,
     pub expired: bool,
     pub health: i64,
     pub interim_steps: Vec<InterimStep>,
-    pub progress_steps: Vec<Value>,
+    pub progress_steps: Vec<ProgressStep>,
     pub is_personal: bool,
     pub is_community: bool,
-    pub region_drops: Vec<Value>,
-    pub archwing_drops: Vec<Value>,
+    pub region_drops: Vec<String>,
+    pub archwing_drops: Vec<String>,
     pub as_string: String,
-    pub metadata: Metadata,
-    pub completion_bonuses: Vec<Value>,
+    pub completion_bonuses: Vec<i64>,
     pub score_var: String,
     pub alt_expiry: String,
     pub alt_activation: String,
@@ -202,9 +201,17 @@ pub struct Event {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ProgressStep {
+    #[serde(rename = "type")]
+    pub step_type: String,
+    progress_amt: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Reward {
     pub items: Vec<String>,
-    pub counted_items: Vec<Value>,
+    pub counted_items: Vec<CountedItem>,
     pub credits: i64,
     pub as_string: String,
     pub item_string: String,
@@ -223,10 +230,6 @@ pub struct InterimStep {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Message {}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Metadata {}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -266,9 +269,9 @@ pub struct Mission {
     pub is_sharkwing: bool,
     pub level_override: String,
     pub enemy_spec: String,
-    pub advanced_spawners: Vec<Value>,
-    pub required_items: Vec<Value>,
-    pub level_auras: Vec<Value>,
+    pub advanced_spawners: Vec<String>,
+    pub required_items: Vec<String>,
+    pub level_auras: Vec<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -281,7 +284,7 @@ pub struct Sortie {
     pub active: bool,
     pub reward_pool: String,
     pub variants: Vec<Variant>,
-    pub missions: Vec<Value>,
+    pub missions: Vec<Mission>,
     pub boss: String,
     pub faction: String,
     pub faction_key: String,
@@ -426,11 +429,18 @@ pub struct VoidTrader {
     pub active: bool,
     pub character: String,
     pub location: String,
-    pub inventory: Vec<Value>,
+    pub inventory: Vec<VoidItem>,
     pub ps_id: String,
     pub end_string: String,
     pub initial_start: String,
-    pub schedule: Vec<Value>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VoidItem {
+    pub item: String,
+    pub ducats: i64,
+    pub credits: i64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -557,7 +567,6 @@ pub struct Nightwave {
     pub tag: String,
     pub phase: i64,
     pub params: Params,
-    pub possible_challenges: Vec<Value>,
     pub active_challenges: Vec<ActiveChallenge>,
     pub reward_types: Vec<String>,
 }
@@ -702,7 +711,6 @@ pub struct ArchonHunt {
     pub expiry: String,
     pub active: bool,
     pub reward_pool: String,
-    pub variants: Vec<Value>,
     pub missions: Vec<ArchonHuntMission>,
     pub boss: String,
     pub faction: String,
@@ -722,9 +730,9 @@ pub struct ArchonHuntMission {
     pub nightmare: bool,
     pub archwing_required: bool,
     pub is_sharkwing: bool,
-    pub advanced_spawners: Vec<Value>,
-    pub required_items: Vec<Value>,
-    pub level_auras: Vec<Value>,
+    pub advanced_spawners: Vec<String>,
+    pub required_items: Vec<String>,
+    pub level_auras: Vec<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -743,4 +751,21 @@ pub struct Choice {
     pub category: String,
     pub category_key: String,
     pub choices: Vec<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Kuva {
+    pub id: String,
+    pub activation: String,
+    pub expiry: String,
+    pub start_string: String,
+    pub active: bool,
+    pub node: String,
+    pub enemy: String,
+    pub enemy_key: String,
+    pub kuva_type: String,
+    pub type_key: String,
+    pub archwing: bool,
+    pub sharkwing: bool,
 }

@@ -2,6 +2,7 @@ pub mod model;
 
 use reqwest::Client as HttpClient;
 use std::collections::HashMap;
+use std::time::SystemTime;
 use url::Url;
 
 use std::sync::Arc;
@@ -28,12 +29,53 @@ impl Default for WarframeClient {
 }
 
 ///
-/// Cache to cache the results of `WarframeClient`. It is threadsafe because it internally uses an
+/// defines a cache entry to validate cache entries based on the `timestamp`
+///
+#[derive(Debug, Clone)]
+struct CacheEntry<T>
+where
+    T: Clone,
+{
+    pub entry: T,
+    expiration_time: SystemTime,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct CacheKey<T>
+where
+    T: std::hash::Hash + PartialEq + Eq,
+{
+    pub key_value: T,
+    pub language: model::Language,
+    pub platform: model::PlatformType,
+}
+
+impl<T: std::hash::Hash + PartialEq + Eq> CacheKey<T> {
+    fn new(key_value: T, language: model::Language, platform: model::PlatformType) -> Self {
+        Self {
+            key_value,
+            language,
+            platform,
+        }
+    }
+}
+
+impl<T: Clone> CacheEntry<T> {
+    fn new(entry: T, expiration_time: SystemTime) -> Self {
+        Self {
+            entry,
+            expiration_time,
+        }
+    }
+}
+
+///
+/// Cache to cache the results of `WarframeClient`. This threadsafe because it internally uses an
 /// arc mutex
 ///
 #[derive(Debug, Default, Clone)]
 pub struct WarframeCache {
-    map: Arc<Mutex<HashMap<(&'static str, model::PlatformType, model::Language), String>>>,
+    map: Arc<Mutex<HashMap<CacheKey<&'static str>, CacheEntry<String>>>>,
 }
 
 type CacheResult = Result<String, Box<dyn std::error::Error>>;
@@ -54,9 +96,8 @@ impl WarframeCache {
         language: model::Language,
         platform: model::PlatformType,
     ) -> Option<String> {
-        let lock = self.map.lock().await;
-        lock.get(&(key, platform, language))
-            .map(|json| json.to_string())
+        // TODO: implement
+        panic!("not implemented");
     }
 
     ///
@@ -70,11 +111,7 @@ impl WarframeCache {
         platform: model::PlatformType,
         future: impl std::future::Future<Output = CacheResult>,
     ) -> CacheResult {
-        let mut lock = self.map.lock().await;
-        Ok(lock
-            .entry((key, platform, language))
-            .or_insert(future.await?)
-            .to_string())
+        panic!("not implemented");
     }
 }
 
